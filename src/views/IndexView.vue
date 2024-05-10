@@ -2,7 +2,7 @@
 
 import {logout} from '@/net'
 import router from '@/router'
-import {ArrowDown, Back, Search} from '@element-plus/icons-vue'
+import {ArrowDown, Back, Download, Search} from '@element-plus/icons-vue'
 import {ref} from "vue";
 import {userStore} from "@/store";
 import {get} from "@/net"
@@ -26,9 +26,9 @@ const handleSearch = () => {
     const query = encodeURIComponent(searchInput.value);
 
     // 使用封装的 get 请求调用后端接口
-    get(`/api/search?query=${query}`,
+    get(`/api/ytb/search?query=${query}`,
         (data) => {
-            searchResults.value = data.items;
+            searchResults.value = data;
             ElMessage.success('搜索成功！');
             loading.value = false;
         },
@@ -54,13 +54,10 @@ function handleMenuSelect(index) {
     // Implement your menu item selection logic here
     console.log(`Selected menu item: ${index}`)
 }
-
-
-const playlistData = [
-    {name: 'Blinding Lights', artist: 'The Weeknd', duration: '3:24'},
-    {name: 'Levitating', artist: 'Dua Lipa', duration: '3:23'},
-    {name: 'Peaches', artist: 'Justin Bieber', duration: '3:18'},
-]
+function handleDownload(video) {
+    ElMessage.info(`正在下载视频：${video.title}`);
+    // 实现你自己的下载逻辑
+}
 
 </script>
 <template>
@@ -136,16 +133,35 @@ const playlistData = [
                 <!-- Main Content Area -->
 
                 <el-main class="main-content-page">
-                    <!-- Add your main page content here -->
-                    <div class="search-results">
-                        <el-table v-if="searchResults.length" :data="searchResults">
-                            <el-table-column prop="snippet.title" label="视频标题"/>
-                            <el-table-column prop="snippet.channelTitle" label="频道名称"/>
-                            <el-table-column prop="id.videoId" label="视频 ID"/>
-                        </el-table>
-                        <el-empty v-else description="无搜索结果，请尝试其他关键字。"/>
-                    </div>
-
+                    <el-scrollbar>
+                        <!-- Add your main page content here -->
+                        <div class="search-results">
+                            <el-table v-if="searchResults !== null&& searchResults.length" :data="searchResults">
+                                <el-table-column type="index" width="50" />
+                                <el-table-column
+                                    label="缩略图"
+                                    width="150"
+                                >
+                                    <template v-slot="scope">
+                                        <img :src="scope.row.thumbnailUrl "
+                                             alt="缩略图" style="width: 160px; height: 90px;"/>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="title" label="视频标题"/>
+                                <el-table-column prop="duration" label="时长"/>
+                                <el-table-column label="下载">
+                                    <template #default="scope">
+                                        <font-awesome-icon
+                                            :icon="['fas', 'download']"
+                                            class="download-icon"
+                                            @click="handleDownload(scope.row)"
+                                        />
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                            <el-empty v-else-if="searchResults !== null" description="无搜索结果，请尝试其他关键字。"/>
+                        </div>
+                    </el-scrollbar>
                 </el-main>
                 <!-- Bottom Music Player Controls -->
             </el-container>
@@ -221,15 +237,13 @@ const playlistData = [
     padding: 20px;
 }
 
-.playlist-card {
-    margin-top: 20px;
+.download-icon {
+    cursor: pointer;
+    color:  gray;
+    font-size: 20px;
 }
 
-.music-controls {
-    height: 80px;
-    border-top: solid 1px var(--el-border-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.download-icon:hover {
+    color: #e47470;
 }
 </style>
