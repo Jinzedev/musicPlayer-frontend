@@ -1,87 +1,50 @@
-<template>
-    <el-container class="main-content">
-        <!-- Sidebar Navigation -->
-        <el-aside width="200px"  class="sidebar">
-            <el-image class="logo" src="https://element-plus.org/images/element-plus-logo.svg"/>
-            <el-menu default-active="1"
-                     class="sidebar-menu"
-                     active-text-color="#e47470"
-                     @select="handleMenuSelect">
-                <el-menu-item index="1">
-                    <font-awesome-icon :icon="['fas', 'house-chimney-crack']"/>
-                    <span class="menu-icon-margin">为你推荐</span>
-                </el-menu-item>
-                <el-menu-item index="2">
-                    <font-awesome-icon :icon="['fas', 'heart']"/>
-                    <span class="menu-icon-margin">我的最爱</span>
-                </el-menu-item>
-                <el-menu-item index="3">
-                    <font-awesome-icon :icon="['fas', 'download']"/>
-                    <span class="menu-icon-margin">下载管理</span>
-                </el-menu-item>
-
-            </el-menu>
-        </el-aside>
-
-        <el-container>
-            <!-- Header -->
-            <el-header class="main-content-header">
-
-                <div class="search-bar">
-                    <el-input
-                        v-model="input1"
-                        style="width: 360px; border-radius: 10px"
-                        size="large"
-                        placeholder="Please Input"
-                        :prefix-icon="Search"
-                    />
-                </div>
-                <div class="user-info">
-                    <el-dropdown>
-                        <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
-                        <template #dropdown>
-                            <el-dropdown-item @click="userLogout">
-                                <el-icon>
-                                    <Back/>
-                                </el-icon>
-                                退出登录
-                            </el-dropdown-item>
-                        </template>
-                    </el-dropdown>
-                </div>
-            </el-header>
-            <!-- Main Content Area -->
-
-            <el-main class="main-content-page">
-                <!-- Add your main page content here -->
-                <div>
-                    <h2>Main Content Area</h2>
-                    <!-- Example Playlist -->
-                    <el-card class="playlist-card">
-                        <h3>Top Hits</h3>
-                        <el-table :data="playlistData">
-                            <el-table-column prop="name" label="Song" width="200"></el-table-column>
-                            <el-table-column prop="artist" label="Artist" width="200"></el-table-column>
-                            <el-table-column prop="duration" label="Duration" width="100"></el-table-column>
-                        </el-table>
-                    </el-card>
-                </div>
-            </el-main>
-            <!-- Bottom Music Player Controls -->
-        </el-container>
-        <el-footer class="music-controls">
-            <el-row justify="center" align="middle">
-                <el-button icon="el-icon-back"/>
-                <el-button icon="el-icon-play"/>
-                <el-button icon="el-icon-next"/>
-            </el-row>
-        </el-footer>
-    </el-container>
-</template>
 <script setup>
+
 import {logout} from '@/net'
 import router from '@/router'
-import {Back, Search} from '@element-plus/icons-vue'
+import {ArrowDown, Back, Search} from '@element-plus/icons-vue'
+import {ref} from "vue";
+import {userStore} from "@/store";
+import {get} from "@/net"
+import {ElMessage} from "element-plus";
+
+const store = userStore()
+const loading = ref(true)
+const searchInput = ref('')
+const searchResults = ref([])
+
+
+const handleSearch = () => {
+    // 检查搜索关键词是否为空
+    if (!searchInput.value.trim()) {
+        ElMessage.warning('搞什么✈，正常输入啊！');
+        return;
+    }
+
+    loading.value = true;
+
+    const query = encodeURIComponent(searchInput.value);
+
+    // 使用封装的 get 请求调用后端接口
+    get(`/api/search?query=${query}`,
+        (data) => {
+            searchResults.value = data.items;
+            ElMessage.success('搜索成功！');
+            loading.value = false;
+        },
+        (message, status, url) => {
+            console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+            loading.value = false;
+            ElMessage.error(`获取搜索结果失败: ${message}`);
+        }
+    )
+};
+
+get("/api/user/info", (data) => {
+    store.user = data
+    loading.value = false
+})
+
 
 function userLogout() {
     logout(() => router.push('/'))
@@ -92,13 +55,104 @@ function handleMenuSelect(index) {
     console.log(`Selected menu item: ${index}`)
 }
 
-const input1 = ''
+
 const playlistData = [
     {name: 'Blinding Lights', artist: 'The Weeknd', duration: '3:24'},
     {name: 'Levitating', artist: 'Dua Lipa', duration: '3:23'},
     {name: 'Peaches', artist: 'Justin Bieber', duration: '3:18'},
 ]
+
 </script>
+<template>
+    <div class="main-content" v-loading="loading" element-loading-text="正在进入，请稍后...">
+        <el-container style="height: 100%;">
+            <!-- Sidebar Navigation -->
+            <el-aside width="200px" class="sidebar">
+                <el-image class="logo" src="logo.svg"/>
+                <el-menu default-active="1"
+                         class="sidebar-menu"
+                         active-text-color="#e47470"
+                         @select="handleMenuSelect">
+                    <el-menu-item index="1">
+                        <font-awesome-icon :icon="['fas', 'house-chimney-crack']"/>
+                        <span class="menu-icon-margin">为你推荐</span>
+                    </el-menu-item>
+                    <el-menu-item index="2">
+                        <font-awesome-icon :icon="['fas', 'heart']"/>
+                        <span class="menu-icon-margin">我的最爱</span>
+                    </el-menu-item>
+                    <el-menu-item index="3">
+                        <font-awesome-icon :icon="['fas', 'download']"/>
+                        <span class="menu-icon-margin">下载管理</span>
+                    </el-menu-item>
+
+                </el-menu>
+            </el-aside>
+
+            <el-container>
+                <!-- Header -->
+                <el-header class="main-content-header">
+
+                    <div class="search-bar">
+                        <el-input
+                            v-model="searchInput"
+                            style="width: 360px; border-radius: 10px"
+                            size="large"
+                            placeholder="Please Input"
+                            :prefix-icon="Search"
+                            @keyup.enter="handleSearch"
+                        />
+                        <el-button
+                            type="primary"
+                            icon="Search"
+                            @click="handleSearch"
+                            :loading="loading"
+                        >
+                            搜索
+                        </el-button>
+                    </div>
+                    <div>
+                        <el-dropdown>
+                            <div class="user-info">
+                                <el-avatar src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png"/>
+                                <span style="margin-left: 15px;color: #b4b3b3;font-size: 15px"> {{
+                                        store.user.username
+                                    }}</span>
+                                <el-icon class="el-icon--right">
+                                    <arrow-down/>
+                                </el-icon>
+                            </div>
+                            <template #dropdown>
+                                <el-dropdown-item @click="userLogout">
+                                    <el-icon>
+                                        <Back/>
+                                    </el-icon>
+                                    退出登录
+                                </el-dropdown-item>
+                            </template>
+                        </el-dropdown>
+                    </div>
+                </el-header>
+                <!-- Main Content Area -->
+
+                <el-main class="main-content-page">
+                    <!-- Add your main page content here -->
+                    <div class="search-results">
+                        <el-table v-if="searchResults.length" :data="searchResults">
+                            <el-table-column prop="snippet.title" label="视频标题"/>
+                            <el-table-column prop="snippet.channelTitle" label="频道名称"/>
+                            <el-table-column prop="id.videoId" label="视频 ID"/>
+                        </el-table>
+                        <el-empty v-else description="无搜索结果，请尝试其他关键字。"/>
+                    </div>
+
+                </el-main>
+                <!-- Bottom Music Player Controls -->
+            </el-container>
+        </el-container>
+    </div>
+</template>
+
 <style scoped>
 .main-content {
     height: 100vh;
@@ -113,14 +167,11 @@ const playlistData = [
     padding: 0 120px;
 }
 
-.logo {
-    height: 38px;
-}
 
 .search-bar {
     flex: 1;
     padding: 0 20px;
-    text-align: center;
+
 
 }
 
@@ -138,7 +189,12 @@ const playlistData = [
 .sidebar {
     background-color: var(--el-bg-color);
     padding-top: 20px;
-    text-align: center;
+
+}
+
+.logo {
+    margin-left: 20px;
+    height: 52px;
 }
 
 .sidebar-menu {
