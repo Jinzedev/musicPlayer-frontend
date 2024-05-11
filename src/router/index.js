@@ -27,6 +27,27 @@ const router = createRouter({
             path: '/index',
             name: 'index',
             component: () => import('@/views/IndexView.vue'),
+            children: [
+                {
+                    path: '',
+                    name: 'index-home',
+                    component: () => import('@/views/index/HomePage.vue')
+                }, {
+                    path: 'love',
+                    name: 'index-love',
+                    component: () => import('@/views/index/LovePage.vue')
+                }, {
+                    path: 'download',
+                    name: 'index-download',
+                    component: () => import('@/views/index/DownloadPage.vue')
+                },
+                {
+                    path: '/search/:query',
+                    name: 'index-search',
+                    component: () => import('@/views/index/SearchPage.vue'),
+                    props: true
+                }
+            ]
         }
     ]
 })

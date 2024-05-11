@@ -11,33 +11,15 @@ import {ElMessage} from "element-plus";
 const store = userStore()
 const loading = ref(true)
 const searchInput = ref('')
-const searchResults = ref([])
-const isDownloading = ref(false);
+
 
 const handleSearch = () => {
-    // 检查搜索关键词是否为空
     if (!searchInput.value.trim()) {
-        ElMessage.warning("搞什么✈️，正常输入啊！");
+        ElMessage.warning("在搞什么✈️，正常输入！");
         return;
     }
-
-    loading.value = true;
-
-    const query = encodeURIComponent(searchInput.value);
-
-    // 使用封装的 get 请求调用后端接口
-    get(`/api/ytb/search?query=${query}`,
-        (data) => {
-            searchResults.value = data;
-            ElMessage.success('搜索成功！');
-            loading.value = false;
-        },
-        (message, status, url) => {
-            console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-            loading.value = false;
-            ElMessage.error(`获取搜索结果失败: ${message}`);
-        }
-    )
+    // 导航到搜索页面并带上搜索关键词
+    router.push({name: 'index-search', params: {query: searchInput.value.trim()}});
 };
 
 get("/api/user/info", (data) => {
@@ -50,40 +32,6 @@ function userLogout() {
     logout(() => router.push('/'))
 }
 
-function handleMenuSelect(index) {
-    // Implement your menu item selection logic here
-    console.log(`Selected menu item: ${index}`)
-}
-function ytbDownload(video) {
-    if (isDownloading.value) {
-        ElMessage.warning("你干嘛，哎呦，在下了");
-        return;
-    }
-    ElMessage.info("开始下了呦~，耐心等待...");
-    isDownloading.value = true;
-    get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
-        (data) => {
-            // 处理 Blob 数据，创建下载链接
-            const url = window.URL.createObjectURL(data);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${video.title}.mp3`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-            ElMessage.success(`来了 来了：${video.title}`);
-            isDownloading.value = false;
-
-        },
-        (message, status, url) => {
-            console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-            ElMessage.error(`获取下载结果失败: ${message}`);
-            isDownloading.value = false;
-        },
-        'blob' // 指定响应类型为 Blob
-    );
-}
 
 
 </script>
@@ -93,19 +41,20 @@ function ytbDownload(video) {
             <!-- Sidebar Navigation -->
             <el-aside width="200px" class="sidebar">
                 <el-image class="logo" src="logo.svg"/>
-                <el-menu default-active="1"
-                         class="sidebar-menu"
-                         active-text-color="#e47470"
-                         @select="handleMenuSelect">
-                    <el-menu-item index="1">
+                <el-menu
+                    router
+                    :default-active="$route.path"
+                    class="sidebar-menu"
+                    active-text-color="#e47470">
+                    <el-menu-item index="/index">
                         <font-awesome-icon :icon="['fas', 'house-chimney-crack']"/>
                         <span class="menu-icon-margin">为你推荐</span>
                     </el-menu-item>
-                    <el-menu-item index="2">
+                    <el-menu-item index="/index/love">
                         <font-awesome-icon :icon="['fas', 'heart']"/>
                         <span class="menu-icon-margin">我的最爱</span>
                     </el-menu-item>
-                    <el-menu-item index="3">
+                    <el-menu-item index="/index/download">
                         <font-awesome-icon :icon="['fas', 'download']"/>
                         <span class="menu-icon-margin">下载管理</span>
                     </el-menu-item>
@@ -113,7 +62,7 @@ function ytbDownload(video) {
                 </el-menu>
             </el-aside>
 
-            <el-container>
+            <el-container style=" background-color: #1E1E1E;">
                 <!-- Header -->
                 <el-header class="main-content-header">
 
@@ -126,14 +75,6 @@ function ytbDownload(video) {
                             :prefix-icon="Search"
                             @keyup.enter="handleSearch"
                         />
-                        <el-button
-                            type="primary"
-                            icon="Search"
-                            @click="handleSearch"
-                            :loading="loading"
-                        >
-                            搜索
-                        </el-button>
                     </div>
                     <div>
                         <el-dropdown>
@@ -155,43 +96,25 @@ function ytbDownload(video) {
                                 </el-dropdown-item>
                             </template>
                         </el-dropdown>
+                        <font-awesome-icon :icon="['fas', 'gear']"
+                                           class="header-setting"/>
                     </div>
                 </el-header>
                 <!-- Main Content Area -->
 
                 <el-main class="main-content-page">
                     <el-scrollbar>
-                        <!-- Add your main page content here -->
-                        <div class="search-results">
-                            <el-table v-if="searchResults !== null&& searchResults.length" :data="searchResults">
-                                <el-table-column type="index" width="50" />
-                                <el-table-column
-                                    label="缩略图"
-                                    width="150"
-                                >
-                                    <template v-slot="scope">
-                                        <img :src="scope.row.thumbnailUrl "
-                                             alt="缩略图" style="width: 160px; height: 90px;"/>
-                                    </template>
-                                </el-table-column>
-                                <el-table-column prop="title" label="视频标题"/>
-                                <el-table-column prop="duration" label="时长"/>
-                                <el-table-column label="下载">
-                                    <template #default="scope">
-                                        <font-awesome-icon
-                                            :icon="['fas', 'download']"
-                                            class="download-icon"
-                                            :style="{ cursor: isDownloading ? 'not-allowed' : 'pointer', color: isDownloading ? 'grey' : '' }"
-                                            @click="ytbDownload(scope.row)"
-                                        />
-                                    </template>
-                                </el-table-column>
-                            </el-table>
-                            <el-empty v-else-if="searchResults !== null" description="无搜索结果，请尝试其他关键字。"/>
-                        </div>
+
+                        <router-view v-slot="{Component}">
+                            <transition name="el-fade-in-linear" mode="out-in">
+                                <component :is="Component" style="height: 100%"/>
+                            </transition>
+                        </router-view>
+
                     </el-scrollbar>
+
                 </el-main>
-                <!-- Bottom Music Player Controls -->
+
             </el-container>
         </el-container>
     </div>
@@ -222,7 +145,7 @@ function ytbDownload(video) {
 
 .user-info {
     display: flex;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
 }
 
@@ -230,8 +153,19 @@ function ytbDownload(video) {
     cursor: pointer;
 }
 
+.header-setting {
+    margin: 10px;
+    vertical-align: middle;
+    cursor: pointer;
+    font-size: 20px;
+
+    &:hover {
+        color: #e47470;
+    }
+}
+
 .sidebar {
-    background-color: var(--el-bg-color);
+    background-color: #121212;
     padding-top: 20px;
 
 }
@@ -253,7 +187,7 @@ function ytbDownload(video) {
 
 .sidebar-menu .el-menu-item:hover {
     cursor: pointer;
-    background-color: #1D1D1D;
+    background-color: #212121;
 }
 
 .menu-icon-margin {
@@ -265,14 +199,5 @@ function ytbDownload(video) {
     padding: 20px;
 }
 
-.download-icon {
-    cursor: pointer;
-    color:  gray;
-    font-size: 20px;
-    transition: color 0.3s ease;
-}
 
-.download-icon:hover {
-    color: #e47470;
-}
 </style>
