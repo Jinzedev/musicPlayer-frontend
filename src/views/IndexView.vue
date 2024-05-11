@@ -2,7 +2,7 @@
 
 import {logout} from '@/net'
 import router from '@/router'
-import {ArrowDown, Back, Download, Search} from '@element-plus/icons-vue'
+import {ArrowDown, Back, Search} from '@element-plus/icons-vue'
 import {ref} from "vue";
 import {userStore} from "@/store";
 import {get} from "@/net"
