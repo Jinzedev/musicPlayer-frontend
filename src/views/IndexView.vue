@@ -12,12 +12,12 @@ const store = userStore()
 const loading = ref(true)
 const searchInput = ref('')
 const searchResults = ref([])
-
+const isDownloading = ref(false);
 
 const handleSearch = () => {
     // 检查搜索关键词是否为空
     if (!searchInput.value.trim()) {
-        ElMessage.warning('搞什么✈，正常输入啊！');
+        ElMessage.warning("搞什么✈️，正常输入啊！");
         return;
     }
 
@@ -54,10 +54,37 @@ function handleMenuSelect(index) {
     // Implement your menu item selection logic here
     console.log(`Selected menu item: ${index}`)
 }
-function handleDownload(video) {
-    ElMessage.info(`正在下载视频：${video.title}`);
-    // 实现你自己的下载逻辑
+function ytbDownload(video) {
+    if (isDownloading.value) {
+        ElMessage.warning("你干嘛，哎呦，在下了");
+        return;
+    }
+    ElMessage.info("开始下了呦~，耐心等待...");
+    isDownloading.value = true;
+    get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
+        (data) => {
+            // 处理 Blob 数据，创建下载链接
+            const url = window.URL.createObjectURL(data);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${video.title}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            ElMessage.success(`来了 来了：${video.title}`);
+            isDownloading.value = false;
+
+        },
+        (message, status, url) => {
+            console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+            ElMessage.error(`获取下载结果失败: ${message}`);
+            isDownloading.value = false;
+        },
+        'blob' // 指定响应类型为 Blob
+    );
 }
+
 
 </script>
 <template>
@@ -154,7 +181,8 @@ function handleDownload(video) {
                                         <font-awesome-icon
                                             :icon="['fas', 'download']"
                                             class="download-icon"
-                                            @click="handleDownload(scope.row)"
+                                            :style="{ cursor: isDownloading ? 'not-allowed' : 'pointer', color: isDownloading ? 'grey' : '' }"
+                                            @click="ytbDownload(scope.row)"
                                         />
                                     </template>
                                 </el-table-column>
@@ -241,6 +269,7 @@ function handleDownload(video) {
     cursor: pointer;
     color:  gray;
     font-size: 20px;
+    transition: color 0.3s ease;
 }
 
 .download-icon:hover {

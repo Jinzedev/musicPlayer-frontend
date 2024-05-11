@@ -57,14 +57,25 @@ function internalPost(url, data, headers, success, failure, error = defaultError
     }).catch(err => error(err))
 }
 
-function internalGet(url, headers, success, failure, error = defaultError){
-    axios.get(url, { headers: headers }).then(({data}) => {
-        if(data.code === 200)
-            success(data.data)
-        else
-            failure(data.message, data.code, url)
-    }).catch(err => error(err))
+function internalGet(url, headers, success, failure, responseType = 'json', error = defaultError) {
+    axios.get(url, { headers: headers, responseType: responseType })
+        .then(({ data }) => {
+            // 如果是 blob 响应类型，直接返回数据
+            if (responseType === 'blob') {
+                success(data);
+            } else if (data.code === 200) {
+                success(data.data);
+            } else {
+                failure(data.message, data.code, url);
+            }
+        })
+        .catch(err => error(err));
 }
+
+function get(url, success, failure, responseType = 'json') {
+    internalGet(url, accessHeader(), success, failure, responseType);
+}
+
 
 function login(username, password, remember, success, failure = defaultFailure){
     internalPost('/api/auth/login', {
@@ -79,6 +90,7 @@ function login(username, password, remember, success, failure = defaultFailure){
     }, failure)
 }
 
+
 function post(url, data, success, failure = defaultFailure) {
     internalPost(url, data, accessHeader() , success, failure)
 }
@@ -91,9 +103,7 @@ function logout(success, failure = defaultFailure){
     }, failure)
 }
 
-function get(url, success, failure = defaultFailure) {
-    internalGet(url, accessHeader(), success, failure)
-}
+
 
 function unauthorized() {
     return !takeAccessToken()
