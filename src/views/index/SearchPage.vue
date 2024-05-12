@@ -67,7 +67,7 @@ function ytbDownload(video) {
 </script>
 <template>
     <div class="search-results" v-loading="searching">
-        <el-table v-if="results && results.length" :data="results">
+        <el-table  v-if="results && results.length" :data="results">
             <el-table-column type="index" width="50"/>
             <el-table-column label="缩略图" width="150">
                 <template #default="{ row }">
@@ -96,8 +96,6 @@ function ytbDownload(video) {
 
 <style scoped>
 
-
-<style scoped>
 .download-icon {
     cursor: pointer;
     color: gray;
@@ -115,9 +113,6 @@ function ytbDownload(video) {
     overflow: hidden;
 }
 
-.el-table th, .el-table td {
-    padding: 12px 15px;
-}
 
 
 </style>
