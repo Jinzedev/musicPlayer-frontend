@@ -31,7 +31,9 @@ get("/api/user/info", (data) => {
 function userLogout() {
     logout(() => router.push('/'))
 }
-
+const handleSearchClear = () => {
+    ElMessage.info("搜索已清空");
+};
 
 
 </script>
@@ -40,7 +42,7 @@ function userLogout() {
         <el-container style="height: 100%;">
             <!-- Sidebar Navigation -->
             <el-aside width="200px" class="sidebar">
-                <el-image class="logo" src="logo.svg"/>
+                <el-image class="logo" src="https://element-plus.org/images/element-plus-logo.svg"/>
                 <el-menu
                     router
                     :default-active="$route.path"
@@ -69,9 +71,11 @@ function userLogout() {
                     <div class="search-bar">
                         <el-input
                             v-model="searchInput"
-                            style="width: 360px; border-radius: 10px"
+                            style="width: 360px; padding: 8px 10px; border-radius: 5px;"
                             size="large"
-                            placeholder="Please Input"
+                            clearable
+                            @clear="handleSearchClear"
+                            placeholder="请输入..."
                             :prefix-icon="Search"
                             @keyup.enter="handleSearch"
                         />
@@ -97,7 +101,7 @@ function userLogout() {
                             </template>
                         </el-dropdown>
                         <font-awesome-icon :icon="['fas', 'gear']"
-                                           class="header-setting"/>
+                                           class="user-setting"/>
                     </div>
                 </el-header>
                 <!-- Main Content Area -->
@@ -121,58 +125,20 @@ function userLogout() {
 </template>
 
 <style scoped>
+
 .main-content {
     height: 100vh;
     width: 100vw;
 }
 
-.main-content-header {
-    height: 80px;
-    display: flex;
-    align-items: center;
-    box-sizing: border-box;
-    padding: 0 120px;
-}
-
-
-.search-bar {
-    flex: 1;
-    padding: 0 20px;
-
-
-}
-
-
-.user-info {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.el-avatar:hover {
-    cursor: pointer;
-}
-
-.header-setting {
-    margin: 10px;
-    vertical-align: middle;
-    cursor: pointer;
-    font-size: 20px;
-
-    &:hover {
-        color: #e47470;
-    }
-}
-
 .sidebar {
-    background-color: #121212;
+    background-color: var(--sidebar-bg-color); /* 稍亮的侧边栏背景色 */
     padding-top: 20px;
-
 }
 
 .logo {
     margin-left: 20px;
-    height: 52px;
+    height: 32px;
 }
 
 .sidebar-menu {
@@ -181,23 +147,75 @@ function userLogout() {
     padding-left: 30px;
 }
 
-.sidebar-menu .el-menu-item {
-    border-radius: 10px;
-}
-
-.sidebar-menu .el-menu-item:hover {
-    cursor: pointer;
-    background-color: #212121;
-}
-
 .menu-icon-margin {
     margin-left: 10px;
     font-size: 18px;
 }
 
+.sidebar-menu .el-menu-item {
+    border-radius: 10px;
+    color: var(--secondary-text-color);
+    transition: background-color 0.2s, color 0.2s; /* 平滑过渡效果 */
+}
+
+.sidebar-menu .el-menu-item:not(.is-disabled):hover {
+    background-color: var(--hover-bg-color); /* 悬停时的背景色 */
+    color: var(--active-text-color);
+}
+.sidebar-menu .el-menu-item.is-active {
+    background-color: var(--highlight-color); /* 选中时的背景色 */
+    color: var(--active-text-color);
+    border-left: 3px solid var(--text-color); /* 左侧边框表示活跃状态 */
+    padding-left: 5px; /* 调整内边距以适应边框 */
+}
+
+
+.main-content-header {
+    background-color: var(--main-bg-color);
+    padding: 10px 20px; /* 增加内边距 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 内容分布 */
+}
+
+.search-bar {
+    flex-grow: 1;
+    margin-right: 20px; /* 调整间距 */
+}
+:deep(.el-input__wrapper.is-focus){
+    box-shadow: 0 0 0 1px var(--el-input-hover-border-color) inset;
+}
+
+/* 用户信息样式调整 */
+.user-info {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.el-avatar:hover {
+    cursor: pointer;
+}
+
+.user-setting {
+    margin: 10px;
+    vertical-align: middle;
+    cursor: pointer;
+    font-size: 20px;
+
+    &:hover {
+        color: var(--active-text-color);
+    }
+}
+
 .main-content-page {
     padding: 20px;
+    background-color: var(--main-bg-color);
+    color: var(--secondary-text-color);
 }
+
+
+
 
 
 </style>

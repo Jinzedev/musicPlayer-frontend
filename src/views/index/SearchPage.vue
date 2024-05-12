@@ -9,6 +9,8 @@ const results = ref([]);
 const isDownloading = ref(false);
 const searching = ref(false);
 
+const hoveredIndex = ref(-1);
+
 onMounted(fetchResults);
 watch(() => route.params.query, fetchResults);
 
@@ -74,7 +76,7 @@ function ytbDownload(video) {
             </el-table-column>
             <el-table-column prop="title" label="视频标题" />
             <el-table-column prop="duration" label="时长" width="80px"/>
-            <el-table-column label="操作" width="100px">
+            <el-table-column label="下载" width="100px">
                 <template #default="{ row }">
                     <font-awesome-icon
                         :icon="['fas', 'download']"
@@ -93,17 +95,6 @@ function ytbDownload(video) {
 </template>
 
 <style scoped>
-.download-icon {
-    cursor: pointer;
-    color: gray;
-    font-size: 20px;
-    transition: color 0.3s ease;
-
-    &:hover {
-        color: #e47470;
-    }
-}
-</style>
 
 
 <style scoped>

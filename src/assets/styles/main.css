@@ -1,0 +1,11 @@
+:root {
+    --main-bg-color: #121212; /* 更亮的深色背景 */
+    --sidebar-bg-color: #1e1e1e; /* 侧边栏的背景色，略亮于主背景 */
+    --highlight-color: #2a2a2a; /* 高亮颜色，深灰但略亮于侧边栏背景 */
+    --hover-bg-color: #242424; /* 悬停时的背景色，更为明显的深灰色 */
+    --text-color: #FFFFFF; /* 主文本颜色，白色 */
+    --active-text-color: #e47470; /* 主文本颜色，白色 */
+    --secondary-text-color: #BBBBBB; /* 次级文本颜色，浅灰 */
+    --font-family-main: 'Roboto', sans-serif; /* 主字体 */
+}
+
