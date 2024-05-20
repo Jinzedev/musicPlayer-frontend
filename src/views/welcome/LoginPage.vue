@@ -31,19 +31,13 @@
             </el-form-item>
           </el-col>
           <el-col :span="12" style="text-align: right">
-            <el-link @click="router.push('/forget')">忘记密码？</el-link>
+            <el-link @click="ElMessage.warning('包骗的')">忘记密码？</el-link>
           </el-col>
         </el-row>
       </el-form>
     </div>
     <div style="margin-top: 40px">
       <el-button @click="userLogin()" style="width: 270px" type="success" plain>立即登录</el-button>
-    </div>
-    <el-divider>
-      <span style="color: grey;font-size: 13px">没有账号</span>
-    </el-divider>
-    <div>
-      <el-button style="width: 270px" @click="router.push('/register')" type="warning" plain>注册账号</el-button>
     </div>
   </div>
 </template>
@@ -53,6 +47,7 @@ import {User, Lock} from '@element-plus/icons-vue'
 import router from "@/router";
 import {reactive, ref} from "vue";
 import {login} from '@/net'
+import {ElMessage} from "element-plus";
 
 const formRef = ref()
 const form = reactive({
@@ -77,6 +72,7 @@ function userLogin() {
     }
   });
 }
+
 </script>
 
 <style scoped>
