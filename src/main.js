@@ -9,6 +9,8 @@ import { fas } from '@fortawesome/free-solid-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import './assets/styles/main.css';
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
 
 
 axios.defaults.baseURL = 'http://localhost:8080'
@@ -19,5 +21,6 @@ const app = createApp(App)
 
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(createPinia())
+app.use(ElementPlus)
 app.use(router)
 app.mount('#app')
