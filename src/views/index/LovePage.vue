@@ -4,8 +4,7 @@
 
 <template>
     <div>
-
-我的最爱
+        我的最爱
     </div>
 </template>
 

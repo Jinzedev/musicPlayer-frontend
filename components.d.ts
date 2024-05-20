@@ -40,6 +40,7 @@ declare module '@vue/runtime-core' {
     ElSubmenu: typeof import('element-plus/es')['ElSubmenu']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
+    MusicTag: typeof import('./src/components/MusicTag.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

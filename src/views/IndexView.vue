@@ -108,7 +108,6 @@ const handleSearchClear = () => {
 
                 <el-main class="main-content-page">
                     <el-scrollbar>
-
                         <router-view v-slot="{Component}">
                             <transition name="el-fade-in-linear" mode="out-in">
                                 <component :is="Component" style="height: 100%"/>

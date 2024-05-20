@@ -7,10 +7,9 @@ import {get} from "@/net";
 const route = useRoute();
 const results = ref([]);
 const isDownloading = ref(false);
+const isPlaying = ref(false);
 const searching = ref(false);
-
-const hoveredIndex = ref(-1);
-
+ref(-1);
 onMounted(fetchResults);
 watch(() => route.params.query, fetchResults);
 
@@ -18,7 +17,7 @@ function fetchResults() {
     const query = route.params.query;
     if (!query) return;
     searching.value = true;
-    results.value=[]
+    results.value = []
     get(`/api/ytb/search?query=${encodeURIComponent(query)}`,
         (data) => {
             results.value = data; // 将搜索结果赋值给 results
@@ -64,17 +63,19 @@ function ytbDownload(video) {
     );
 }
 
+
 </script>
+
 <template>
     <div class="search-results" v-loading="searching">
-        <el-table  v-if="results && results.length" :data="results">
-            <el-table-column type="index" width="50"/>
+        <el-table v-if="results && results.length" :data="results">
+            <el-table-column type="index" width="50" label="#"/>
             <el-table-column label="缩略图" width="150">
                 <template #default="{ row }">
                     <img :src="row.thumbnailUrl.trim()" alt="视频缩略图" style="width: 160px; height: 90px;"/>
                 </template>
             </el-table-column>
-            <el-table-column prop="title" label="视频标题" />
+            <el-table-column prop="title" label="视频标题"/>
             <el-table-column prop="duration" label="时长" width="80px"/>
             <el-table-column label="下载" width="100px">
                 <template #default="{ row }">
@@ -84,6 +85,17 @@ function ytbDownload(video) {
                         :style="{ cursor: isDownloading ? 'not-allowed' : 'pointer', color: isDownloading ? 'grey' : '' }"
                         @click="isDownloading ? null : ytbDownload(row)"
                         :aria-disabled="isDownloading.toString()"
+                    />
+                </template>
+            </el-table-column>
+            <el-table-column label="播放" width="100px">
+                <template #default="{ row }">
+                    <font-awesome-icon
+                        :icon="['fas', 'play']"
+                        class="download-icon"
+                        :style="{ cursor: isPlaying ? 'not-allowed' : 'pointer', color: isPlaying ? 'grey' : '' }"
+                        @click="isPlaying ? null : playVideo(row)"
+                        :aria-disabled="isPlaying.toString()"
                     />
                 </template>
             </el-table-column>
@@ -103,14 +115,22 @@ function ytbDownload(video) {
     transition: color 0.3s ease;
 
     &:hover {
-        color: #e47470;
+        color: var(--active-text-color);
     }
 }
 
 .search-results {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-radius: 8px;
+    transition: .3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
     overflow: hidden;
+    padding: 20px;
+    margin: 20px;
+}
+
+
+:deep(.el-table td.el-table__cell) {
+    border-bottom: none;
 }
 
 
