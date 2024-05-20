@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { get } from "@/net";
@@ -34,53 +34,35 @@ function fetchResults() {
   );
 }
 
-function ytbDownload(video) {
-  if (isDownloading.value) {
-    ElMessage.warning("你干嘛，哎呦，在下了🐣");
-    return;
-  }
-  ElMessage.info("开始下了呦~，请耐心等待😶‍🌫️...");
-  isDownloading.value = true;
-  get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
-      (data) => {
-        // 处理 Blob 数据，创建下载链接
-        const url = window.URL.createObjectURL(data);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${video.title}.mp3`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-        ElMessage.success(`来了 来了：${video.title}`);
-        isDownloading.value = false;
-      },
-      (message, status, url) => {
-        console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-        ElMessage.error(`获取下载结果失败: ${message}`);
-        isDownloading.value = false;
-      },
-      'blob' // 指定响应类型为 Blob
-  );
-}
-
 function playAudio(video) {
   if (isPlaying.value) {
     ElMessage.warning("已经在播放中");
     return;
   }
   isPlaying.value = true;
-  get(`/api/ytb/download/url?videoId=${encodeURIComponent(video.videoId)}`,
+
+  get(`/api/ytb/stream?videoId=${encodeURIComponent(video.videoId)}`,
       (data) => {
-        audioSrc.value = data; // 将返回的 MP3 文件 URL 赋值给 audioSrc
-        audioElement.value.play();
+        // 设置音频源并播放
+        audioSrc.value = URL.createObjectURL(data);
+        nextTick(() => {
+          console.log("Loading audio...");
+          audioElement.value.load();
+          audioElement.value.play().then(() => {
+            console.log("Audio started playing.");
+          }).catch((error) => {
+            console.error("Audio play error:", error);
+            isPlaying.value = false;
+          });
+        });
         ElMessage.success(`正在播放：${video.title}`);
       },
       (message, status, url) => {
         console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-        ElMessage.error(`获取播放 URL 失败: ${message}`);
+        ElMessage.error(`播放音频失败: ${message}`);
         isPlaying.value = false;
-      }
+      },
+      'blob' // 指定响应类型为 Blob
   );
 }
 </script>
@@ -123,36 +105,31 @@ function playAudio(video) {
         v-else
         :description="searching ? '正在搜索...' : '无搜索结果，请尝试其他关键字。'"/>
   </div>
-  <audio ref="audioElement" :src="audioSrc" @ended="isPlaying = false"></audio>
+  <audio ref="audioElement" :src="audioSrc" @ended="isPlaying = false" controls></audio>
 </template>
 
 <style scoped>
-
 .download-icon {
-    cursor: pointer;
-    color: gray;
-    font-size: 20px;
-    transition: color 0.3s ease;
+  cursor: pointer;
+  color: gray;
+  font-size: 20px;
+  transition: color 0.3s ease;
+}
 
-    &:hover {
-        color: var(--active-text-color);
-    }
+.download-icon:hover {
+  color: var(--active-text-color);
 }
 
 .search-results {
-    transition: .3s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    overflow: hidden;
-    padding: 20px;
-    margin: 20px;
+  transition: .3s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  padding: 20px;
+  margin: 20px;
 }
-
 
 :deep(.el-table td.el-table__cell) {
-    border-bottom: none;
+  border-bottom: none;
 }
-
-
-
 </style>
