@@ -1,109 +1,129 @@
 <script setup>
-import {onMounted, ref, watch} from 'vue';
-import {useRoute} from 'vue-router';
-import {ElMessage} from 'element-plus';
-import {get} from "@/net";
+import { onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import { get } from "@/net";
 
 const route = useRoute();
 const results = ref([]);
 const isDownloading = ref(false);
 const isPlaying = ref(false);
 const searching = ref(false);
-ref(-1);
+const audioSrc = ref(null);
+const audioElement = ref(null);
+
 onMounted(fetchResults);
 watch(() => route.params.query, fetchResults);
 
 function fetchResults() {
-    const query = route.params.query;
-    if (!query) return;
-    searching.value = true;
-    results.value = []
-    get(`/api/ytb/search?query=${encodeURIComponent(query)}`,
-        (data) => {
-            results.value = data; // 将搜索结果赋值给 results
-            searching.value = false;
-            ElMessage.success('鸡汤来咯！');
-        },
-        (message, status, url) => {
-            console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-            ElMessage.error(`获取搜索结果失败: ${message}`);
-            searching.value = false;
-        }
-    );
+  const query = route.params.query;
+  if (!query) return;
+  searching.value = true;
+  results.value = [];
+  get(`/api/ytb/search?query=${encodeURIComponent(query)}`,
+      (data) => {
+        results.value = data; // 将搜索结果赋值给 results
+        searching.value = false;
+        ElMessage.success('鸡汤来咯！');
+      },
+      (message, status, url) => {
+        console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+        ElMessage.error(`获取搜索结果失败: ${message}`);
+        searching.value = false;
+      }
+  );
 }
 
 function ytbDownload(video) {
-    if (isDownloading.value) {
-        ElMessage.warning("你干嘛，哎呦，在下了🐣");
-        return;
-    }
-    ElMessage.info("开始下了呦~，请耐心等待😶‍🌫️...");
-    isDownloading.value = true;
-    get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
-        (data) => {
-            // 处理 Blob 数据，创建下载链接
-            const url = window.URL.createObjectURL(data);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${video.title}.mp3`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-            ElMessage.success(`来了 来了：${video.title}`);
-            isDownloading.value = false;
-
-        },
-        (message, status, url) => {
-            console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-            ElMessage.error(`获取下载结果失败: ${message}`);
-            isDownloading.value = false;
-        },
-        'blob' // 指定响应类型为 Blob
-    );
+  if (isDownloading.value) {
+    ElMessage.warning("你干嘛，哎呦，在下了🐣");
+    return;
+  }
+  ElMessage.info("开始下了呦~，请耐心等待😶‍🌫️...");
+  isDownloading.value = true;
+  get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
+      (data) => {
+        // 处理 Blob 数据，创建下载链接
+        const url = window.URL.createObjectURL(data);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${video.title}.mp3`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+        ElMessage.success(`来了 来了：${video.title}`);
+        isDownloading.value = false;
+      },
+      (message, status, url) => {
+        console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+        ElMessage.error(`获取下载结果失败: ${message}`);
+        isDownloading.value = false;
+      },
+      'blob' // 指定响应类型为 Blob
+  );
 }
 
-
+function playAudio(video) {
+  if (isPlaying.value) {
+    ElMessage.warning("已经在播放中");
+    return;
+  }
+  isPlaying.value = true;
+  get(`/api/ytb/download/url?videoId=${encodeURIComponent(video.videoId)}`,
+      (data) => {
+        audioSrc.value = data; // 将返回的 MP3 文件 URL 赋值给 audioSrc
+        audioElement.value.play();
+        ElMessage.success(`正在播放：${video.title}`);
+      },
+      (message, status, url) => {
+        console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+        ElMessage.error(`获取播放 URL 失败: ${message}`);
+        isPlaying.value = false;
+      }
+  );
+}
 </script>
 
 <template>
-    <div class="search-results" v-loading="searching">
-        <el-table v-if="results && results.length" :data="results">
-            <el-table-column type="index" width="50" label="#"/>
-            <el-table-column label="缩略图" width="150">
-                <template #default="{ row }">
-                    <img :src="row.thumbnailUrl.trim()" alt="视频缩略图" style="width: 160px; height: 90px;"/>
-                </template>
-            </el-table-column>
-            <el-table-column prop="title" label="视频标题"/>
-            <el-table-column prop="duration" label="时长" width="80px"/>
-            <el-table-column label="下载" width="100px">
-                <template #default="{ row }">
-                    <font-awesome-icon
-                        :icon="['fas', 'download']"
-                        class="download-icon"
-                        :style="{ cursor: isDownloading ? 'not-allowed' : 'pointer', color: isDownloading ? 'grey' : '' }"
-                        @click="isDownloading ? null : ytbDownload(row)"
-                        :aria-disabled="isDownloading.toString()"
-                    />
-                </template>
-            </el-table-column>
-            <el-table-column label="播放" width="100px">
-                <template #default="{ row }">
-                    <font-awesome-icon
-                        :icon="['fas', 'play']"
-                        class="download-icon"
-                        :style="{ cursor: isPlaying ? 'not-allowed' : 'pointer', color: isPlaying ? 'grey' : '' }"
-                        @click="isPlaying ? null : playVideo(row)"
-                        :aria-disabled="isPlaying.toString()"
-                    />
-                </template>
-            </el-table-column>
-        </el-table>
-        <el-empty
-            v-else
-            :description="searching ? '正在搜索...' : '无搜索结果，请尝试其他关键字。'"/>
-    </div>
+  <div class="search-results" v-loading="searching">
+    <el-table v-if="results && results.length" :data="results">
+      <el-table-column type="index" width="50" label="#"/>
+      <el-table-column label="缩略图" width="150">
+        <template #default="{ row }">
+          <img :src="row.thumbnailUrl.trim()" alt="视频缩略图" style="width: 160px; height: 90px;"/>
+        </template>
+      </el-table-column>
+      <el-table-column prop="title" label="视频标题"/>
+      <el-table-column prop="duration" label="时长" width="80px"/>
+      <el-table-column label="下载" width="100px">
+        <template #default="{ row }">
+          <font-awesome-icon
+              :icon="['fas', 'download']"
+              class="download-icon"
+              :style="{ cursor: isDownloading ? 'not-allowed' : 'pointer', color: isDownloading ? 'grey' : '' }"
+              @click="isDownloading ? null : ytbDownload(row)"
+              :aria-disabled="isDownloading.toString()"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="播放" width="100px">
+        <template #default="{ row }">
+          <font-awesome-icon
+              :icon="['fas', 'play']"
+              class="download-icon"
+              :style="{ cursor: isPlaying ? 'not-allowed' : 'pointer', color: isPlaying ? 'grey' : '' }"
+              @click="isPlaying ? null : playAudio(row)"
+              :aria-disabled="isPlaying.toString()"
+          />
+        </template>
+      </el-table-column>
+    </el-table>
+    <el-empty
+        v-else
+        :description="searching ? '正在搜索...' : '无搜索结果，请尝试其他关键字。'"/>
+  </div>
+  <audio ref="audioElement" :src="audioSrc" @ended="isPlaying = false"></audio>
 </template>
 
 <style scoped>
