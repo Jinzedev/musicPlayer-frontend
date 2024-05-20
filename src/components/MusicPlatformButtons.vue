@@ -1,7 +1,9 @@
 <template>
     <div class="music-tag">
         <template v-for="(platform, index) in platforms" :key="platform.id">
-            <el-button @click="platform.action">
+            <el-button
+                :ref="el => platformRefs[index] = el"
+                @click="() => selectPlatform(platform.id)">
                 {{ platform.name }}
             </el-button>
             <el-divider v-if="index < platforms.length - 1" class="music-tag-divider" direction="vertical"/>
@@ -13,15 +15,24 @@
 import { ref } from 'vue';
 
 const platforms = ref([
-    { id: '_NETEASE_MUSIC', name: '网易云音乐', action: () => playSpotify() },
-    { id: '_QQ_MUSIC', name: 'QQ音乐', action: () => playAppleMusic() },
-    { id: '_XIAMI_MUSIC', name: '虾米音乐', action: () => playYouTubeMusic() },
-    { id: '_KUGOU_MUSIC', name: '酷狗音乐', action: () => playYouTubeMusic() },
-    { id: '_KUWO_MUSIC', name: '酷我音乐', action: () => playYouTubeMusic() },
-    { id: '_BILIBILI_MUSIC', name: '哔哩哔哩', action: () => playYouTubeMusic() },
-    { id: '_MIGU_MUSIC', name: '咪咕音乐', action: () => playYouTubeMusic() },
-    { id: '_YouTube_MUSIC', name: 'YouTube', action: () => playYouTubeMusic() },
+    { id: '网易云音乐', name: '网易云音乐', action: () => playSpotify() },
+    { id: 'QQ音乐', name: 'QQ音乐', action: () => playAppleMusic() },
+    { id: '虾米音乐', name: '虾米音乐', action: () => playYouTubeMusic() },
+    { id: '酷狗音乐', name: '酷狗音乐', action: () => playYouTubeMusic() },
+    { id: '酷我音乐', name: '酷我音乐', action: () => playYouTubeMusic() },
+    { id: '哔哩哔哩', name: '哔哩哔哩', action: () => playYouTubeMusic() },
+    { id: '咪咕音乐', name: '咪咕音乐', action: () => playYouTubeMusic() },
+    { id: 'YouTube', name: 'YouTube', action: () => playYouTubeMusic() },
 ]);
+const platformRefs = ref([]);
+defineExpose({ platformRefs });
+
+function selectPlatform(platformId) {
+    const selectedPlatform = platforms.value.find(platform => platform.id === platformId);
+    if (selectedPlatform && selectedPlatform.action) {
+        selectedPlatform.action();
+    }
+}
 
 function playSpotify() {
     console.log('Playing Spotify');

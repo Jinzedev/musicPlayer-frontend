@@ -1,10 +1,11 @@
 <template>
     <div>
-        <div>
+        <div style="margin: 10px">
             <span
                 style="margin: 10px;font-weight: bold;font-size: 24px;color: var(--text-color)">{{ route.params.query }}</span>
             <span style="margin-right: 5px;color: var(--secondary-text-color)">的相关搜索如下</span>
         </div>
+        <music-platform-buttons  ref="platformButtons" />
         <div class="search-results" v-loading="searching">
             <el-table v-if="results && results.length" :data="results">
                 <el-table-column type="index" width="50" label="#"/>
@@ -87,9 +88,14 @@ const currentTime = ref('0:00');
 const duration = ref('0:00');
 const progress = ref(0);
 const isMuted = ref(false);
+const platformButtons = ref(null);
 
 onMounted(fetchResults);
 watch(() => route.params.query, fetchResults);
+
+
+
+
 
 function fetchResults() {
     const query = route.params.query;
@@ -101,6 +107,7 @@ function fetchResults() {
             results.value = data; // 将搜索结果赋值给 results
             searching.value = false;
             ElMessage.success('鸡汤来咯！');
+            highlightPlatform("YouTube");
         },
         (message, status, url) => {
             console.warn(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
@@ -108,6 +115,17 @@ function fetchResults() {
             searching.value = false;
         }
     );
+}
+
+function highlightPlatform(platformName) {
+    const platformIndex = platformButtons.value.platformRefs.findIndex(ref => {
+        return ref.$el.textContent.trim() === platformName;
+    });
+    if (platformIndex !== -1) {
+        nextTick(() => {
+            platformButtons.value.platformRefs[platformIndex].$el.focus();
+        });
+    }
 }
 
 function ytbDownload(video) {
@@ -240,7 +258,7 @@ function formatTime(seconds) {
     border-radius: 10px;
     overflow: hidden;
     padding: 20px;
-    margin: 20px;
+    margin: 10px;
 }
 
 :deep(.el-table td.el-table__cell) {
