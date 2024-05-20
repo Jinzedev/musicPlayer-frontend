@@ -1,29 +1,29 @@
 <script setup>
-import { useDark, useToggle } from '@vueuse/core'
+import {useDark} from '@vueuse/core'
 
-useDark({
-  selector: 'html',
-  attribute: 'class',
-  valueDark: 'dark',
-  valueLight: 'light'
+// 强制启用黑暗模式
+const isDark = useDark({
+    selector: 'html',
+    attribute: 'class',
+    valueDark: 'dark',
+    valueLight: 'light',
 })
 
-useDark({
-  onChanged(dark) { useToggle(dark) }
-})
+// 手动设置为黑暗模式
+isDark.value = true;
 
 </script>
 
 <template>
-  <header>
-    <div class="wrapper">
-      <router-view/>
-    </div>
-  </header>
+    <header>
+        <div class="wrapper">
+            <router-view/>
+        </div>
+    </header>
 </template>
 
 <style scoped>
 header {
-  line-height: 1.5;
+    line-height: 1.5;
 }
 </style>

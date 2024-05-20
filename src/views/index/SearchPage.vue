@@ -1,4 +1,8 @@
 <template>
+    <div class="search-title">
+        <span style="margin: 10px;font-weight: bold;font-size: 24px;color: var(--text-color)">{{route.params.query}}</span>
+        <span style="margin-right: 5px;color: var(--secondary-text-color)">的相关搜索如下</span>
+    </div>
   <div class="search-results" v-loading="searching">
     <el-table v-if="results && results.length" :data="results">
       <el-table-column type="index" width="50" label="#"/>
@@ -60,10 +64,10 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { get } from "@/net";
+import {nextTick, onMounted, ref, watch} from 'vue';
+import {useRoute} from 'vue-router';
+import {ElMessage} from 'element-plus';
+import {get} from "@/net";
 
 const route = useRoute();
 const results = ref([]);
@@ -201,8 +205,7 @@ function updateProgress() {
 }
 
 function seek(event) {
-  const seekTime = (event.target.value / 100) * audioElement.value.duration;
-  audioElement.value.currentTime = seekTime;
+    audioElement.value.currentTime = (event.target.value / 100) * audioElement.value.duration;
 }
 
 function formatTime(seconds) {
@@ -213,6 +216,12 @@ function formatTime(seconds) {
 </script>
 
 <style scoped>
+.search-title{
+
+}
+
+
+
 .download-icon {
   cursor: pointer;
   color: gray;
@@ -242,8 +251,8 @@ function formatTime(seconds) {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: 10px;
-  background-color: #f9f9f9;
+
+  background-color: var(--main-bg-color);
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-top: 20px;

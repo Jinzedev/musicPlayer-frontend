@@ -9,7 +9,7 @@ const platforms = ref([
     {id: '_KUWO_MUSIC', name: '酷我音乐', action: () => playYouTubeMusic()},
     {id: '_BILIBILI_MUSIC', name: '哔哩哔哩', action: () => playYouTubeMusic()},
     {id: '_MIGU_MUSIC', name: '咪咕音乐', action: () => playYouTubeMusic()},
-    {id: '_TAIHE_MUSIC', name: '千千音乐', action: () => playYouTubeMusic()},
+    {id: '_YouTube_MUSIC', name: 'YouTube', action: () => playYouTubeMusic()},
 ]);
 
 function playSpotify() {
