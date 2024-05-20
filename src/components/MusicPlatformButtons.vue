@@ -3,6 +3,8 @@
         <template v-for="(platform, index) in platforms" :key="platform.id">
             <el-button
                 :ref="el => platformRefs[index] = el"
+                :tabindex="0"
+                :class="{ active: activeIndex === index }"
                 @click="() => selectPlatform(platform.id)">
                 {{ platform.name }}
             </el-button>
@@ -12,46 +14,46 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {nextTick, onBeforeUnmount, onMounted, ref} from 'vue';
 
 const platforms = ref([
-    {id: '网易云音乐', name: '网易云音乐', action: () => playSpotify()},
-    {id: 'QQ音乐', name: 'QQ音乐', action: () => playAppleMusic()},
-    {id: '虾米音乐', name: '虾米音乐', action: () => playYouTubeMusic()},
-    {id: '酷狗音乐', name: '酷狗音乐', action: () => playYouTubeMusic()},
-    {id: '酷我音乐', name: '酷我音乐', action: () => playYouTubeMusic()},
-    {id: '哔哩哔哩', name: '哔哩哔哩', action: () => playYouTubeMusic()},
-    {id: '咪咕音乐', name: '咪咕音乐', action: () => playYouTubeMusic()},
-    {id: 'YouTube', name: 'YouTube', action: () => playYouTubeMusic()},
+    {id: '网易云音乐', name: '网易云音乐'},
+    {id: 'QQ音乐', name: 'QQ音乐'},
+    {id: '虾米音乐', name: '虾米音乐'},
+    {id: '酷狗音乐', name: '酷狗音乐'},
+    {id: '酷我音乐', name: '酷我音乐'},
+    {id: '哔哩哔哩', name: '哔哩哔哩'},
+    {id: '咪咕音乐', name: '咪咕音乐'},
+    {id: 'YouTube', name: 'YouTube'},
 ]);
-
+const activeIndex = ref(-1);
 
 const platformRefs = ref([]);
 defineExpose({platformRefs});
 
-function selectPlatform(platformId) {
-    const selectedPlatform = platforms.value.find(platform => platform.id === platformId);
-    if (selectedPlatform && selectedPlatform.action) {
-        selectedPlatform.action();
+function selectPlatform(index) {
+    activeIndex.value = index;
+    nextTick(() => {
+        if (platformRefs.value[index]?.$el) {
+            platformRefs.value[index].$el.focus();
+        }
+    });
+}
+
+function handleClickOutside(event) {
+    // 检查点击的目标是否在按钮引用数组中
+    if (!platformRefs.value.some(ref => ref?.$el?.contains(event.target))) {
+        event.preventDefault();
     }
-
 }
 
+onMounted(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+});
 
-function playSpotify() {
-    console.log('Playing Spotify');
-    // 特定的逻辑
-}
-
-function playAppleMusic() {
-    console.log('Playing Apple Music');
-    // 特定的逻辑
-}
-
-function playYouTubeMusic() {
-    console.log('Playing YouTube Music');
-    // 特定的逻辑
-}
+onBeforeUnmount(() => {
+    document.removeEventListener('mousedown', handleClickOutside);
+});
 </script>
 
 <style scoped>
