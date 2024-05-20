@@ -12,27 +12,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref} from 'vue';
 
 const platforms = ref([
-    { id: '网易云音乐', name: '网易云音乐', action: () => playSpotify() },
-    { id: 'QQ音乐', name: 'QQ音乐', action: () => playAppleMusic() },
-    { id: '虾米音乐', name: '虾米音乐', action: () => playYouTubeMusic() },
-    { id: '酷狗音乐', name: '酷狗音乐', action: () => playYouTubeMusic() },
-    { id: '酷我音乐', name: '酷我音乐', action: () => playYouTubeMusic() },
-    { id: '哔哩哔哩', name: '哔哩哔哩', action: () => playYouTubeMusic() },
-    { id: '咪咕音乐', name: '咪咕音乐', action: () => playYouTubeMusic() },
-    { id: 'YouTube', name: 'YouTube', action: () => playYouTubeMusic() },
+    {id: '网易云音乐', name: '网易云音乐', action: () => playSpotify()},
+    {id: 'QQ音乐', name: 'QQ音乐', action: () => playAppleMusic()},
+    {id: '虾米音乐', name: '虾米音乐', action: () => playYouTubeMusic()},
+    {id: '酷狗音乐', name: '酷狗音乐', action: () => playYouTubeMusic()},
+    {id: '酷我音乐', name: '酷我音乐', action: () => playYouTubeMusic()},
+    {id: '哔哩哔哩', name: '哔哩哔哩', action: () => playYouTubeMusic()},
+    {id: '咪咕音乐', name: '咪咕音乐', action: () => playYouTubeMusic()},
+    {id: 'YouTube', name: 'YouTube', action: () => playYouTubeMusic()},
 ]);
+
+
 const platformRefs = ref([]);
-defineExpose({ platformRefs });
+defineExpose({platformRefs});
 
 function selectPlatform(platformId) {
     const selectedPlatform = platforms.value.find(platform => platform.id === platformId);
     if (selectedPlatform && selectedPlatform.action) {
         selectedPlatform.action();
     }
+
 }
+
 
 function playSpotify() {
     console.log('Playing Spotify');
