@@ -220,9 +220,7 @@ function formatTime(seconds) {
 </script>
 
 <style scoped>
-.search-title {
 
-}
 
 
 .download-icon {
