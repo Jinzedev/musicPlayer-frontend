@@ -1,0 +1,20 @@
+/* src/styles/cursor.css */
+body.custom-cursor {
+    cursor: url('cursor-clicked.png'), auto;
+}
+
+body.custom-cursor-clicked {
+    cursor: url('cursor-clicked.png'), auto;
+    animation: star-fall 1s forwards;
+}
+
+@keyframes star-fall {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+}

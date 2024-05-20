@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://code.jquery.com/jquery-3.6.0.min.js"/>
     <link rel="stylesheet" href="//lib.baomitu.com/element-plus/2.2.32/index.css"/>
     <title>Vite App</title>
     <style>
@@ -18,6 +19,31 @@
 </head>
 <body>
 <div id="app"></div>
+
+<!-- 鼠标点击特效 -->
+<script type="text/javascript" src="https://www.liuzehe.top/upload/bkjs/meme.js"></script>
+<canvas class="fireworks" style="position:fixed;left:0;top:0;z-index:99999999;pointer-events:none;"></canvas>
+<script type="text/javascript" src="https://www.liuzehe.top/upload/bkjs/anime.min.js"></script>
+<script type="text/javascript" src="https://www.liuzehe.top/upload/bkjs/fireworks.js"></script>
 <script type="module" src="./src/main.js"></script>
+
+<!-- 动态线条特效 -->
+<script>
+    window.onload = function() {
+        // 动态创建动态线条特效脚本并设置属性
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://www.liuzehe.top/upload/bkjs/bj.js';
+        document.body.appendChild(script);
+
+        // 确保脚本加载完成后设置属性
+        script.onload = function() {
+            script.setAttribute('color', '0,174,255');
+            script.setAttribute('opacity', '0.7');
+            script.setAttribute('zIndex', '-2');
+            script.setAttribute('count', '200');
+        };
+    }
+</script>
 </body>
 </html>
