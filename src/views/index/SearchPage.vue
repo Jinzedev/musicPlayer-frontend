@@ -34,11 +34,42 @@ function fetchResults() {
   );
 }
 
+function ytbDownload(video) {
+    if (isDownloading.value) {
+        ElMessage.warning("你干嘛，哎呦，在下了🐣");
+        return;
+    }
+    ElMessage.info("开始下了呦~，请耐心等待😶‍🌫️...");
+    isDownloading.value = true;
+    get(`/api/ytb/download?videoId=${encodeURIComponent(video.videoId)}`,
+        (data) => {
+            // 处理 Blob 数据，创建下载链接
+            const url = window.URL.createObjectURL(data);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${video.title}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            ElMessage.success(`来了 来了：${video.title}`);
+            isDownloading.value = false;
+        },
+        (message, status, url) => {
+            console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+            ElMessage.error(`获取下载结果失败: ${message}`);
+            isDownloading.value = false;
+        },
+        'blob' // 指定响应类型为 Blob
+    );
+}
+
 function playAudio(video) {
   if (isPlaying.value) {
     ElMessage.warning("已经在播放中");
     return;
   }
+  ElMessage.info("马上来了嗷~，等个几秒😶‍...");
   isPlaying.value = true;
 
   get(`/api/ytb/stream?videoId=${encodeURIComponent(video.videoId)}`,
@@ -94,9 +125,9 @@ function playAudio(video) {
           <font-awesome-icon
               :icon="['fas', 'play']"
               class="download-icon"
-              :style="{ cursor: isPlaying ? 'not-allowed' : 'pointer', color: isPlaying ? 'grey' : '' }"
+              :style="{ cursor: 'pointer', color: isPlaying ? 'grey' : '' }"
               @click="isPlaying ? null : playAudio(row)"
-              :aria-disabled="isPlaying.toString()"
+
           />
         </template>
       </el-table-column>
