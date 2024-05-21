@@ -1,5 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router';
 import { unauthorized } from "@/net";
+import store from '../store/store';
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,17 +43,22 @@ const router = createRouter({
             ]
         }
     ]
-})
+});
 
 router.beforeEach((to, from, next) => {
-    const isUnauthorized = unauthorized()
-    if(to.name.startsWith('welcome') && !isUnauthorized) {
-        next('/index')
-    } else if(to.fullPath.startsWith('/index') && isUnauthorized) {
-        next('/')
+    const isUnauthorized = unauthorized();
+    if (to.name.startsWith('welcome') && !isUnauthorized) {
+        next('/index');
+    } else if (to.fullPath.startsWith('/index') && isUnauthorized) {
+        next('/');
     } else {
-        next()
+        next();
     }
-})
 
-export default router
+    // 确保音频状态在页面切换时保持一致
+    if (store.state.isPlaying && store.state.audioElement.paused) {
+        store.commit('playAudio');
+    }
+});
+
+export default router;
