@@ -159,43 +159,44 @@ function ytbDownload(video) {
 }
 
 function playAudio(video) {
-    if (isPlaying.value) {
-        // 停止当前播放的音频
-        audioElement.value.pause();
-        audioElement.value.currentTime = 0;
-    }
-    ElMessage.info("马上来了嗷~，等个几秒😶‍...");
-    isLoading.value = true;
+  if (isPlaying.value) {
+    // 停止当前播放的音频
+    audioElement.value.pause();
+    audioElement.value.currentTime = 0;
+  }
+  ElMessage.info("马上来了嗷~，等个几秒😶‍...");
+  isLoading.value = true;
 
-    get(`/api/ytb/stream?videoId=${encodeURIComponent(video.videoId)}`,
-        (data) => {
-            // 设置音频源并播放
-            audioSrc.value = URL.createObjectURL(data);
-            currentTitle.value = video.title;
-            currentThumbnail.value = video.thumbnailUrl;
-            nextTick(() => {
-                console.log("Loading audio...");
-                audioElement.value.load();
-                audioElement.value.play().then(() => {
-                    console.log("Audio started playing.");
-                    isPlaying.value = true;
-                    isLoading.value = false;
-                }).catch((error) => {
-                    console.error("Audio play error:", error);
-                    isPlaying.value = false;
-                    isLoading.value = false;
-                });
-            });
-            ElMessage.success(`正在播放：${video.title}`);
-        },
-        (message, status, url) => {
-            console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-            ElMessage.error(`播放音频失败: ${message}`);
+  get(`/api/ytb/stream?videoId=${encodeURIComponent(video.videoId)}`,
+      (data) => {
+        // 设置音频源并播放
+        audioSrc.value = URL.createObjectURL(data);
+        currentTitle.value = video.title;
+        currentThumbnail.value = video.thumbnailUrl;
+        nextTick(() => {
+          console.log("Loading audio...");
+          audioElement.value.load();
+          audioElement.value.play().then(() => {
+            console.log("Audio started playing.");
+            isPlaying.value = true;
+            isLoading.value = false;
+            audioElement.value.loop = true; // 开启单曲循环
+          }).catch((error) => {
+            console.error("Audio play error:", error);
             isPlaying.value = false;
             isLoading.value = false;
-        },
-        'blob' // 指定响应类型为 Blob
-    );
+          });
+        });
+        ElMessage.success(`正在播放：${video.title}`);
+      },
+      (message, status, url) => {
+        console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
+        ElMessage.error(`播放音频失败: ${message}`);
+        isPlaying.value = false;
+        isLoading.value = false;
+      },
+      'blob' // 指定响应类型为 Blob
+  );
 }
 
 function onAudioEnded() {
