@@ -1,13 +1,11 @@
 <template>
     <div>
-        <div style="margin: 10px;">
+        <div style="margin: 10px">
             <span
-                style="margin: 10px;font-weight: bold;font-size: 24px;color: var(--text-color)">{{
-                    route.params.query
-                }}</span>
+                style="margin: 10px;font-weight: bold;font-size: 24px;color: var(--text-color)">{{ route.params.query }}</span>
             <span style="margin-right: 5px;color: var(--secondary-text-color)">的相关搜索如下</span>
         </div>
-        <music-platform-buttons ref="platformButtons"/>
+        <music-platform-buttons  ref="platformButtons" />
         <div class="search-results" v-loading="searching">
             <el-table v-if="results && results.length" :data="results">
                 <el-table-column type="index" width="50" label="#"/>
@@ -94,6 +92,9 @@ const platformButtons = ref(null);
 
 onMounted(fetchResults);
 watch(() => route.params.query, fetchResults);
+
+
+
 
 
 function fetchResults() {
@@ -237,6 +238,7 @@ function formatTime(seconds) {
 </script>
 
 <style scoped>
+
 
 
 .download-icon {
