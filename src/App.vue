@@ -1,7 +1,7 @@
 <!-- src/App.vue -->
 <script setup>
 import { onMounted, onUnmounted } from 'vue';
-import { useDark, useToggle } from '@vueuse/core';
+import { useDark } from '@vueuse/core';
 
 const isDark = useDark({
     selector: 'html',
@@ -9,7 +9,7 @@ const isDark = useDark({
     valueDark: 'dark',
     valueLight: 'light'
 });
-const toggleDark = useToggle(isDark);
+isDark.value = true; // 设置为黑暗模式
 
 const applyClickedCursor = () => {
     document.body.classList.add('custom-cursor-clicked');
