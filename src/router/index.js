@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { unauthorized } from "@/net";
-import store from '../store/store';
+import {userStore} from "@/store";
+
+
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -54,10 +56,10 @@ router.beforeEach((to, from, next) => {
     } else {
         next();
     }
-
+    const store = userStore()
     // 确保音频状态在页面切换时保持一致
-    if (store.state.isPlaying && store.state.audioElement.paused) {
-        store.commit('playAudio');
+    if (store.isPlaying && store.audioElement.paused) {
+        store.playAudio();
     }
 });
 
