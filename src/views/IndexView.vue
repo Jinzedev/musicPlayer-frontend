@@ -7,11 +7,21 @@ import {ref} from "vue";
 import {userStore} from "@/store";
 import {get} from "@/net"
 import {ElMessage} from "element-plus";
+import {computed} from 'vue';
 
 const store = userStore()
 const loading = ref(true)
 const searchInput = ref('')
 
+
+const currentTitle = computed(() => store.currentTitle);
+const currentThumbnail = computed(() => store.currentThumbnail);
+const isPlaying = computed(() => store.isPlaying);
+const isLoading = computed(() => store.isLoading);
+
+const stopTrack = () => {
+    store.pauseAudio();
+};
 
 const handleSearch = () => {
     if (!searchInput.value.trim()) {
@@ -25,12 +35,13 @@ const handleSearch = () => {
 get("/api/user/info", (data) => {
     store.user = data
     loading.value = false
-})
+}, (e)=>{ElMessage.error('出错了{}',e)})
 
 
 function userLogout() {
     logout(() => router.push('/'))
 }
+
 const handleSearchClear = () => {
     ElMessage.info("搜索已清空");
 };
@@ -117,8 +128,17 @@ const handleSearchClear = () => {
                     </el-scrollbar>
 
                 </el-main>
+                <footer class="footer">
 
+                    <div v-if="isPlaying || isLoading" class="music-player">
+                        <img :src="currentThumbnail" alt="Thumbnail" v-if="currentThumbnail" class="thumbnail"/>
+                        <p v-if="isLoading">加载中...</p>
+                        <p v-else>正在播放: {{ currentTitle }}</p>
+                        <button @click="stopTrack">停止播放</button>
+                    </div>
+                </footer>
             </el-container>
+
         </el-container>
     </div>
 </template>
@@ -161,6 +181,7 @@ const handleSearchClear = () => {
     background-color: var(--hover-bg-color); /* 悬停时的背景色 */
     color: var(--active-text-color);
 }
+
 .sidebar-menu .el-menu-item.is-active {
     background-color: var(--highlight-color); /* 选中时的背景色 */
     color: var(--active-text-color);
@@ -181,7 +202,8 @@ const handleSearchClear = () => {
     flex-grow: 1;
     margin-right: 20px; /* 调整间距 */
 }
-:deep(.el-input__wrapper.is-focus){
+
+:deep(.el-input__wrapper.is-focus) {
     box-shadow: 0 0 0 1px var(--el-input-hover-border-color) inset;
 }
 
@@ -213,8 +235,24 @@ const handleSearchClear = () => {
     color: var(--secondary-text-color);
 }
 
+.footer {
+    background-color: var(--main-bg-color);
+    color: var(--secondary-text-color);
+    text-align: center;
+    padding: 10px 0;
+    border-top: 1px solid var(--secondary-text-color);
+}
 
+.music-player {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
 
-
-
+.thumbnail {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
 </style>

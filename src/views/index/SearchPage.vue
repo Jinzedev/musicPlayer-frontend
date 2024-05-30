@@ -43,28 +43,7 @@
                 :description="searching ? '正在搜索...' : '无搜索结果，请尝试其他关键字。'"/>
         </div>
 
-        <!-- Custom Audio Player -->
-        <div class="custom-audio-player" v-if="audioSrc">
-            <div class="audio-info">
-                <img :src="currentThumbnail" alt="音频封面" class="thumbnail"/>
-                <div class="title">{{ currentTitle }}</div>
-            </div>
-            <audio ref="audioElement" :src="audioSrc" @ended="onAudioEnded" @timeupdate="updateProgress"
-                   controls></audio>
-            <div class="controls">
-                <button @click="togglePlay">
-                    <font-awesome-icon :icon="[isPlaying ? 'fas' : 'fas', isPlaying ? 'pause' : 'play']"/>
-                </button>
-                <div class="progress-container">
-                    <span>{{ currentTime }}</span>
-                    <input type="range" min="0" max="100" step="1" v-model="progress" @input="seek"/>
-                    <span>{{ duration }}</span>
-                </div>
-                <button @click="mute">
-                    <font-awesome-icon :icon="['fas', isMuted ? 'volume-mute' : 'volume-up']"/>
-                </button>
-            </div>
-        </div>
+
     </div>
 </template>
 
@@ -73,21 +52,17 @@ import {nextTick, onMounted, ref, watch} from 'vue';
 import {useRoute} from 'vue-router';
 import {ElMessage} from 'element-plus';
 import {get} from "@/net";
+import { userStore } from '@/store';
 
+const store = userStore();
 const route = useRoute();
 const results = ref([]);
 const isDownloading = ref(false);
 const isPlaying = ref(false);
 const searching = ref(false);
-const isLoading = ref(false);
-const audioSrc = ref(null);
-const audioElement = ref(null);
-const currentTitle = ref('');
-const currentThumbnail = ref('');
-const currentTime = ref('0:00');
-const duration = ref('0:00');
-const progress = ref(0);
-const isMuted = ref(false);
+
+
+
 const platformButtons = ref(null);
 
 onMounted(fetchResults);
@@ -157,85 +132,12 @@ function ytbDownload(video) {
         'blob' // 指定响应类型为 Blob
     );
 }
-
 function playAudio(video) {
-  if (isPlaying.value) {
-    // 停止当前播放的音频
-    audioElement.value.pause();
-    audioElement.value.currentTime = 0;
-  }
-  ElMessage.info("马上来了嗷~，等个几秒😶‍...");
-  isLoading.value = true;
-
-  get(`/api/ytb/stream?videoId=${encodeURIComponent(video.videoId)}`,
-      (data) => {
-        // 设置音频源并播放
-        audioSrc.value = URL.createObjectURL(data);
-        currentTitle.value = video.title;
-        currentThumbnail.value = video.thumbnailUrl;
-        nextTick(() => {
-          console.log("Loading audio...");
-          audioElement.value.load();
-          audioElement.value.play().then(() => {
-            console.log("Audio started playing.");
-            isPlaying.value = true;
-            isLoading.value = false;
-            audioElement.value.loop = true; // 开启单曲循环
-          }).catch((error) => {
-            console.error("Audio play error:", error);
-            isPlaying.value = false;
-            isLoading.value = false;
-          });
-        });
-        ElMessage.success(`正在播放：${video.title}`);
-      },
-      (message, status, url) => {
-        console.error(`请求地址: ${url}, 状态码: ${status}, 错误信息: ${message}`);
-        ElMessage.error(`播放音频失败: ${message}`);
-        isPlaying.value = false;
-        isLoading.value = false;
-      },
-      'blob' // 指定响应类型为 Blob
-  );
+    store.fetchAndPlayAudio(video);
 }
 
-function onAudioEnded() {
-    isPlaying.value = false;
-    currentTime.value = '0:00';
-    progress.value = 0;
-}
 
-function togglePlay() {
-    if (isPlaying.value) {
-        audioElement.value.pause();
-    } else {
-        audioElement.value.play();
-    }
-    isPlaying.value = !isPlaying.value;
-}
 
-function mute() {
-    isMuted.value = !isMuted.value;
-    audioElement.value.muted = isMuted.value;
-}
-
-function updateProgress() {
-    const current = audioElement.value.currentTime;
-    const total = audioElement.value.duration;
-    currentTime.value = formatTime(current);
-    duration.value = formatTime(total);
-    progress.value = (current / total) * 100;
-}
-
-function seek(event) {
-    audioElement.value.currentTime = (event.target.value / 100) * audioElement.value.duration;
-}
-
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-}
 </script>
 
 <style scoped>
