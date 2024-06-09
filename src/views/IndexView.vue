@@ -18,10 +18,9 @@ const currentTitle = computed(() => store.currentTitle);
 const currentThumbnail = computed(() => store.currentThumbnail);
 const isPlaying = computed(() => store.isPlaying);
 const isLoading = computed(() => store.isLoading);
+const currentTime = ref(0);
+const duration = ref(240);
 
-const stopTrack = () => {
-    store.pauseAudio();
-};
 
 const handleSearch = () => {
     if (!searchInput.value.trim()) {
@@ -35,7 +34,9 @@ const handleSearch = () => {
 get("/api/user/info", (data) => {
     store.user = data
     loading.value = false
-}, (e)=>{ElMessage.error('出错了{}',e)})
+}, (e) => {
+    ElMessage.error('出错了{}', e)
+})
 
 
 function userLogout() {
@@ -46,6 +47,29 @@ const handleSearchClear = () => {
     ElMessage.info("搜索已清空");
 };
 
+
+const togglePlayPause = () => {
+    if (isPlaying.value) {
+        store.pauseAudio();
+    } else {
+        store.playAudio();
+    }
+};
+
+// 计算属性用于动态控制 footer 的样式
+const footerStyle = computed(() => {
+    return {
+        borderTop: (isPlaying.value || isLoading.value) ? '1px solid var(--divider-color)' : 'none',
+        height: currentTitle.value ? '110px' : '0',
+        transition: 'height 0.3s ease'
+    };
+});
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+}
 
 </script>
 <template>
@@ -128,15 +152,29 @@ const handleSearchClear = () => {
                     </el-scrollbar>
 
                 </el-main>
-                <footer class="footer">
-
-                    <div v-if="isPlaying || isLoading" class="music-player">
+                <el-footer class="footer" :style="footerStyle">
+                    <div v-if="currentTitle" class="music-player">
                         <img :src="currentThumbnail" alt="Thumbnail" v-if="currentThumbnail" class="thumbnail"/>
-                        <p v-if="isLoading">加载中...</p>
-                        <p v-else>正在播放: {{ currentTitle }}</p>
-                        <button @click="stopTrack">停止播放</button>
+                        <div class="track-info">
+                            <p v-if="isLoading">加载中...</p>
+                            <p v-else>{{ currentTitle }}</p>
+                        </div>
+                        <div class="controls">
+                            <font-awesome-icon icon="heart" class="icon"/>
+                            <font-awesome-icon icon="backward" class="icon"/>
+                            <font-awesome-icon :icon="isPlaying ? 'pause' : 'play'" @click="togglePlayPause" class="play-pause-button"/>
+                            <font-awesome-icon icon="forward" class="icon"/>
+                        </div>
+                        <div class="progress-container">
+                            <span>{{ formatTime(currentTime) }}</span>
+                            <el-slider v-model="currentTime" :max="duration" class="progress-bar"></el-slider>
+                            <span>{{ formatTime(duration) }}</span>
+                        </div>
                     </div>
-                </footer>
+                </el-footer>
+
+
+
             </el-container>
 
         </el-container>
@@ -230,29 +268,79 @@ const handleSearchClear = () => {
 }
 
 .main-content-page {
-    padding: 20px;
+    padding: 20px 20px 0 20px;
     background-color: var(--main-bg-color);
     color: var(--secondary-text-color);
+    flex: 1;
 }
 
 .footer {
     background-color: var(--main-bg-color);
     color: var(--secondary-text-color);
     text-align: center;
-    padding: 10px 0;
-    border-top: 1px solid var(--secondary-text-color);
+    padding: 10px ;
+    position: fixed; /* 固定在页面底部 */
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+    z-index: 1000; /* 确保位于其他内容之上 */
 }
 
 .music-player {
     display: flex;
     align-items: center;
-    justify-content: center;
-    margin-top: 10px;
+    justify-content: space-between;
+    background: var(--main-bg-color);
+    border-radius: 8px;
+    padding: 10px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .thumbnail {
     width: 50px;
     height: 50px;
+    border-radius: 4px;
     margin-right: 10px;
+}
+
+.track-info {
+    flex-grow: 1;
+    color: #333;
+    font-size: 16px;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.icon {
+    cursor: pointer;
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.icon:hover {
+    color: #ff4757;
+}
+
+.play-pause-button {
+    background-color: #ff4757;
+    color: white;
+    border-radius: 50%;
+    padding: 10px;
+}
+
+.progress-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+.progress-bar {
+    flex-grow: 1;
 }
 </style>
